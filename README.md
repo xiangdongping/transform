@@ -9,8 +9,11 @@ Student studnt;
 StudenVo studentVo;
 
 studentVo.setName(student.getName());
+
 studentVo.setAge(student.getAge());
-studentVo.gender(student.getGender());
-// 其中大部门相同只有一小部门需要针对处理
+
+studentVo.gender(student.getGender());  
+
+// 其中大部门相同只有一小部门需要针对处理  
 ...
 `

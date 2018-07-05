@@ -21,6 +21,8 @@ public class TransFormTest {
 
     Customer customer;
 
+    CustomerVo customerVo;
+
     TransForm transForm;
     @Before
     public void init(){
@@ -31,11 +33,40 @@ public class TransFormTest {
         customer.setEmail("11139712@qq.com");
         customer.setState(0);
         customer.setName("jack");
+        customer.setId(100L);
+
+
+        customerVo=new CustomerVo();
+
+        customerVo.setAge(15);
+        customerVo.setCode("zsd204");
+        customerVo.setEmail("11139721@qq.com");
+        customerVo.setName("jack");
+        customerVo.setPassword("123456");
+        customerVo.setId(101L);
+
     }
     @Test
     public void transform(){
         CustomerVo customerVo= transForm.transform(customer, CustomerVo.class);
-
         System.out.println(customerVo);
+    }
+
+    @Test
+    public void voTransform(){
+
+        Customer transform = transForm.transform(customerVo, Customer.class);
+
+        System.out.println(transform);
+    }
+
+    @Test
+    public void testIgnore(){
+
+        transForm.fill(customer,customerVo);
+
+        System.out.println(customer);
+        System.out.println(customerVo);
+
     }
 }

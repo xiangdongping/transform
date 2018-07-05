@@ -2,9 +2,9 @@ package org.flybug.util.transform.impl;
 
 import org.flybug.util.transform.ClassDescription;
 import org.flybug.util.transform.TransForm;
+import org.flybug.util.transform.annotaction.CopyIgnore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.util.resources.cldr.es.TimeZoneNames_es_AR;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -84,27 +84,28 @@ public abstract class AbstractTranForm implements TransForm{
         ClassDescription sourceDesc= resolve(source.getClass());
         ClassDescription targetDesc= resolve(target.getClass());
 
-
-
-        // todo 暂时只实现 method to method
         Map<String, Field> fields = sourceDesc.getFields();
 
         Map<String, Method> getMethods = sourceDesc.getGetMethods();
         Map<String, Method> setMethods = targetDesc.getSetMethods();
 
-
         //始终遍历属性少的一方
         Set<String> fileNames=getMethods.size() > setMethods.size() ? setMethods.keySet():getMethods.keySet();
 
         try {
-            Set<String> sourceDescIgnoreProperties = sourceDesc.getIgnoreProperties();
+            Map<String, CopyIgnore> sourceDescIgnoreProperties = sourceDesc.getIgnoreProperties();
+            Map<String, CopyIgnore> targetDescIgnoreProperties= targetDesc.getIgnoreProperties();
+
 
             for (String fieldName : fileNames) {
 
-                if(sourceDescIgnoreProperties.contains(fieldName)){
-                    logger.debug("ignore property copy {}",fieldName);
+                CopyIgnore sourceIgnore= sourceDescIgnoreProperties.get(fieldName);
+                CopyIgnore targetIgnore = targetDescIgnoreProperties.get(fieldName);
+
+                if((sourceIgnore !=null && sourceIgnore.get())
+                        || (targetIgnore !=null && targetIgnore.set()))
                     continue;
-                }
+
                 Method method = getMethods.get(fieldName);
                 Method setMethod = setMethods.get(fieldName);
                 //获取值

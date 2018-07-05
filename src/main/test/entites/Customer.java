@@ -8,6 +8,9 @@ import org.flybug.util.transform.annotaction.CopyIgnore;
  */
 public class Customer {
 
+    @CopyIgnore(get=false)
+    private  Long id;
+
     private String name;
 
     private Integer age;
@@ -57,5 +60,27 @@ public class Customer {
 
     public void setState(Integer state) {
         this.state = state;
+    }
+
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("Customer{");
+        sb.append("id=").append(id);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", age=").append(age);
+        sb.append(", password='").append(password).append('\'');
+        sb.append(", email='").append(email).append('\'');
+        sb.append(", state=").append(state);
+        sb.append('}');
+        return sb.toString();
     }
 }

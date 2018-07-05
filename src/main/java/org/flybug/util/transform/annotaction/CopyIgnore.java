@@ -18,4 +18,17 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CopyIgnore {
 
+    /**
+     * ignore get
+     * @return
+     */
+    boolean get() default  true;
+
+    /**
+     * ignore set
+     * @return
+     */
+    boolean set() default  true;
+
+
 }

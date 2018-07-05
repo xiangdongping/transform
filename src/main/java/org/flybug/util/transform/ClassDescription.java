@@ -6,9 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * 缓存的类描述
@@ -28,7 +26,7 @@ public class ClassDescription {
     private String className;
 
 
-    private Set<String> ignoreProperties=new HashSet<>();
+    private Map<String,CopyIgnore> ignoreProperties=new HashMap();
 
 
 
@@ -58,6 +56,8 @@ public class ClassDescription {
             String settingName = "set" + methodSuffix;
             String gettingName = "get" + methodSuffix;
 
+            CopyIgnore annotation = null;
+
             try {
 
                 Method setMethod = clazz.getDeclaredMethod(settingName, declaredField.getType());
@@ -66,10 +66,10 @@ public class ClassDescription {
                 desc.getMethods.put(filedName,getMethod);
 
                 //如果方法有忽略ignore copy 添加到忽略集合
-                if(setMethod.getAnnotation(CopyIgnore.class) != null
-                        || getMethod.getAnnotation(CopyIgnore.class) != null){
-                    desc.ignoreProperties.add(filedName);
-                }
+
+                if((annotation=setMethod.getAnnotation(CopyIgnore.class)) != null
+                        || (annotation=getMethod.getAnnotation(CopyIgnore.class)) != null);
+
 
 
             }catch (Throwable throwable){
@@ -78,9 +78,8 @@ public class ClassDescription {
             declaredField.setAccessible(true);
             desc.fields.put(filedName,declaredField);
 
-            CopyIgnore annotation = declaredField.getAnnotation(CopyIgnore.class);
-            if(annotation != null){
-                desc.ignoreProperties.add(filedName);
+            if(annotation != null || (annotation=declaredField.getAnnotation(CopyIgnore.class)) != null){
+                desc.ignoreProperties.put(filedName,annotation);
             }
         }
         desc.clazz=clazz;
@@ -109,7 +108,7 @@ public class ClassDescription {
         return className;
     }
 
-    public Set<String> getIgnoreProperties() {
-        return this.ignoreProperties;
+    public Map<String, CopyIgnore> getIgnoreProperties() {
+        return ignoreProperties;
     }
 }

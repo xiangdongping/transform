@@ -2,9 +2,9 @@ package org.flybug.util.transform.impl;
 
 import org.flybug.util.transform.ClassDescription;
 import org.flybug.util.transform.TransForm;
-import org.flybug.util.transform.enums.FillStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.util.resources.cldr.es.TimeZoneNames_es_AR;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -19,31 +19,28 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by xdp on 2018/7/1.
  */
 public abstract class AbstractTranForm implements TransForm{
+    /**
+     * 日志记录器
+     */
+    public Logger logger= LoggerFactory.getLogger(getClass());
 
     /**
-     *
+     * 缓冲
      */
     protected  Map<Class,ClassDescription> cacheClazzs=new ConcurrentHashMap<Class, ClassDescription>();
 
     /**
      * 是否忽略源null值
      */
-    public boolean isIgnoreSourceNull=true;
+    private  boolean isIgnoreSourceNull=true;
 
-    /**
-     * 填充方式。默认 都取方法
-     */
-    public FillStrategy fillStrategy=FillStrategy.SOURCE_METHOD_TARGET_METHOD;
-
-    /**
-     *
-     */
-    public Logger logger= LoggerFactory.getLogger(getClass());
 
     /**
      * 空参数
      */
-    public final Object[] nullArgs =new Object[]{};
+    protected final Object[] nullArgs =new Object[]{};
+
+
 
     /**
      * 获取class Description
@@ -52,7 +49,7 @@ public abstract class AbstractTranForm implements TransForm{
      * @param clazz
      * @return
      */
-    protected   ClassDescription getClassDescription(Class clazz){
+    public  ClassDescription resolve(Class clazz){
         ClassDescription classDescription = cacheClazzs.get(clazz);
         if(classDescription == null){
             classDescription=ClassDescription.build(clazz);
@@ -67,14 +64,14 @@ public abstract class AbstractTranForm implements TransForm{
 
         Object targetEntity=null;
         try {
-            targetEntity = targetClass.getClass().newInstance();
+            targetEntity = targetClass.newInstance();
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
 
-        fill(source,targetClass);
+        fill(source,targetEntity);
 
         return  (T)targetEntity;
     }
@@ -84,12 +81,12 @@ public abstract class AbstractTranForm implements TransForm{
         assertNotNull(source,"source can't is null");
         assertNotNull(target,"target can't is null");
 
-        ClassDescription sourceDesc= getClassDescription(source.getClass());
-        ClassDescription targetDesc= getClassDescription(target.getClass());
+        ClassDescription sourceDesc= resolve(source.getClass());
+        ClassDescription targetDesc= resolve(target.getClass());
+
+
 
         // todo 暂时只实现 method to method
-
-
         Map<String, Field> fields = sourceDesc.getFields();
 
         Map<String, Method> getMethods = sourceDesc.getGetMethods();
@@ -100,15 +97,19 @@ public abstract class AbstractTranForm implements TransForm{
         Set<String> fileNames=getMethods.size() > setMethods.size() ? setMethods.keySet():getMethods.keySet();
 
         try {
+            Set<String> sourceDescIgnoreProperties = sourceDesc.getIgnoreProperties();
 
             for (String fieldName : fileNames) {
 
+                if(sourceDescIgnoreProperties.contains(fieldName)){
+                    logger.debug("ignore property copy {}",fieldName);
+                    continue;
+                }
                 Method method = getMethods.get(fieldName);
                 Method setMethod = setMethods.get(fieldName);
                 //获取值
                 Object val = method == null? null : method.invoke(source, nullArgs);
 
-                // @TODO 后期可升级不同类型转换
                 if(setMethod == null){
                     continue;
                 }
@@ -126,6 +127,7 @@ public abstract class AbstractTranForm implements TransForm{
             logger.error("fill  error msg {} ",fileNames);
         }
     }
+
 
     @Override
     public List<Map<String, Object>> transformToMap(Object source) {

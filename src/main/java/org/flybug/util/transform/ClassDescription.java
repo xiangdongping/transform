@@ -1,5 +1,7 @@
 package org.flybug.util.transform;
 
+import org.flybug.util.transform.annotaction.CopyIgnore;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -26,6 +28,9 @@ public class ClassDescription {
     private String className;
 
 
+    private Set<String> ignoreProperties=new HashSet<>();
+
+
 
     public  static  ClassDescription build(Class clazz){
 
@@ -36,10 +41,10 @@ public class ClassDescription {
 
 
 
-
         // 解析所有的属性，忽略 静态 常量 transient修饰 的字段
         for (Field declaredField : declaredFields) {
             int modifiers = declaredField.getModifiers();
+
             if(Modifier.isStatic(modifiers)
                     ||Modifier.isFinal(modifiers)
                     ||Modifier.isTransient(modifiers)){
@@ -48,7 +53,7 @@ public class ClassDescription {
 
             String filedName = declaredField.getName();
 
-
+            // 按照标准的java bean 命名来
             String methodSuffix = filedName.substring(0, 1).toUpperCase() + filedName.substring(1);
             String settingName = "set" + methodSuffix;
             String gettingName = "get" + methodSuffix;
@@ -60,19 +65,28 @@ public class ClassDescription {
                 desc.setMethods.put(filedName,setMethod);
                 desc.getMethods.put(filedName,getMethod);
 
+                //如果方法有忽略ignore copy 添加到忽略集合
+                if(setMethod.getAnnotation(CopyIgnore.class) != null
+                        || getMethod.getAnnotation(CopyIgnore.class) != null){
+                    desc.ignoreProperties.add(filedName);
+                }
+
 
             }catch (Throwable throwable){
                 throw  new RuntimeException(throwable);
             }
             declaredField.setAccessible(true);
             desc.fields.put(filedName,declaredField);
+
+            CopyIgnore annotation = declaredField.getAnnotation(CopyIgnore.class);
+            if(annotation != null){
+                desc.ignoreProperties.add(filedName);
+            }
         }
         desc.clazz=clazz;
         desc.className=clazz.getName();
         return  desc;
     }
-
-
 
 
     public Map<String, Method> getGetMethods() {
@@ -93,5 +107,9 @@ public class ClassDescription {
 
     public String getClassName() {
         return className;
+    }
+
+    public Set<String> getIgnoreProperties() {
+        return this.ignoreProperties;
     }
 }

@@ -16,4 +16,12 @@ studentVo.gender(student.getGender());
 
 // 其中大部门相同只有一小部门需要针对处理  
 ...
+
+```
+它使用起来非常简单
+
+```
+   Transform transform=new SimpleTransForm();  
+   transform.transform(customer,CustomerVo);
+   
 ```

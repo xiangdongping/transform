@@ -22,6 +22,6 @@ studentVo.gender(student.getGender());
 
 ```
    Transform transform=new SimpleTransForm();  
-   transform.transform(customer,CustomerVo);
+   CustomerVo customervo=transform.transform(customer,CustomerVo.class);
    
 ```

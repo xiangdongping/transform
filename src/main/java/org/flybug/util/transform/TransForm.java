@@ -45,6 +45,6 @@ public interface TransForm {
      * @param source
      * @return
      */
-    List<Map<String,Object>> transformToMap(Object source);
+    Map<String,Object> transformToMap(Object source);
 
 }

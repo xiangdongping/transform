@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.lang.annotation.Target;
+import java.util.Map;
 
 
 public class TransFormTest {
@@ -68,5 +69,14 @@ public class TransFormTest {
         System.out.println(customer);
         System.out.println(customerVo);
 
+    }
+    @Test
+    public void mapTest(){
+        Map<String, Object> stringObjectMap = transForm.transformToMap(customerVo);
+
+        stringObjectMap.forEach((k,v) -> {
+
+            System.out.println(String.format("k = %s , v=%s",k,v));
+        });
     }
 }

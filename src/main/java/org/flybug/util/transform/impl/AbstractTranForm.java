@@ -7,8 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -131,8 +132,29 @@ public abstract class AbstractTranForm implements TransForm{
 
 
     @Override
-    public List<Map<String, Object>> transformToMap(Object source) {
-        throw  new UnsupportedOperationException();
+    public Map<String, Object> transformToMap(Object source) {
+
+        Map result=new HashMap();
+
+        if(source == null){
+            return  result;
+        }
+        ClassDescription resolve = resolve(source.getClass());
+
+        Map<String, Method> getMethods = resolve.getGetMethods();
+
+            getMethods.forEach((k,v) ->{
+                Object val = null;
+                try {
+                    val = v.invoke(source, nullArgs);
+                } catch (IllegalAccessException e) {
+                    e.printStackTrace();
+                } catch (InvocationTargetException e) {
+                    e.printStackTrace();
+                }
+                result.put(k,val);
+            });
+        return  result;
     }
 
     public void fill(Object source, Object target) {
